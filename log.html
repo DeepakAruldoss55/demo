@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Log Monitoring</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            padding: 28px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .breadcrumb a {
+            color: #64748b;
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: #2563eb;
+        }
+
+        /* ── Table ── */
+        .table-container {
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px 16px;
+            text-align: left;
+            font-size: 13px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        th .material-icons-outlined {
+            font-size: 14px;
+            vertical-align: middle;
+            margin-left: 2px;
+            color: #94a3b8;
+        }
+
+        td {
+            color: #334155;
+        }
+
+        tbody tr {
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ── Priority Badges ── */
+        .badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-low {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .badge-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* ── Mail Dot ── */
+        .mail-dot {
+            height: 10px;
+            width: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* ── Action Button ── */
+        .action-btn {
+            cursor: pointer;
+            color: #2563eb;
+            font-size: 20px;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #1d4ed8;
+            transform: scale(1.15);
+        }
+
+        /* ── Pagination ── */
+        .table-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #64748b;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .page-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: #fff;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .page-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .page-btn.active {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+
+        /* ── Side Panel ── */
+        .side-panel {
+            position: fixed;
+            right: -520px;
+            top: 0;
+            width: 520px;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: -4px 0 25px rgba(0, 0, 0, 0.12);
+            transition: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            padding: 28px;
+            overflow: auto;
+            z-index: 1000;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            font-size: 24px;
+            color: #94a3b8;
+            transition: 0.2s;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #ef4444;
+        }
+
+        .side-panel h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 24px;
+        }
+
+        .side-panel h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 18px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .details-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .details-item label {
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .details-item span {
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* ── Tabs ── */
+        .tab-container {
+            display: flex;
+            margin-top: 24px;
+            border: 1px solid #e2e8f0;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            background: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .code-box {
+            background: #1e293b;
+            color: #67e8f9;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            height: 350px;
+            overflow: auto;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+        }
+
+        /* ── Tooltip / Hover Card ── */
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.97);
+            backdrop-filter: blur(16px);
+            color: #e2e8f0;
+            padding: 22px;
+            border-radius: 12px;
+            font-size: 13px;
+            display: none;
+            width: 420px;
+            z-index: 2000;
+            white-space: normal;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            line-height: 1.6;
+            pointer-events: none;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .card-tag {
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .card-tag-low {
+            background: rgba(37, 99, 235, 0.2);
+            color: #60a5fa;
+        }
+
+        .card-tag-medium {
+            background: rgba(217, 119, 6, 0.2);
+            color: #fbbf24;
+        }
+
+        .card-tag-high {
+            background: rgba(220, 38, 38, 0.2);
+            color: #f87171;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .card-item b {
+            display: block;
+            color: #94a3b8;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .card-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 4px;
+        }
+
+        .card-footer {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-style: italic;
+            color: #64748b;
+            font-size: 11px;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-title">LOG MONITORING</div>
+    <!-- Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Date <span class="material-icons-outlined">unfold_more</span></th>
+                    <th>Log Type <span class="material-icons-outlined">unfold_more</span></th>
+                    <th>Log <span class="material-icons-outlined">unfold_more</span></th>
+                    <th>Custom Log <span class="material-icons-outlined">unfold_more</span></th>
+                    <th>Critical Level <span class="material-icons-outlined">unfold_more</span></th>
+                    <th>Mail Trigger <span class="material-icons-outlined">unfold_more</span></th>
+                    <th>Server <span class="material-icons-outlined">unfold_more</span></th>
+                    <th>User Name <span class="material-icons-outlined">unfold_more</span></th>
+                    <th>Location</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr onmousemove="showRowCard(event, 1)" onmouseleave="hideTooltip()">
+                    <td>1</td>
+                    <td>16 Mar 2026, 08:33 AM</td>
+                    <td>User Activities</td>
+                    <td>{"category":"visit_page","mo...</td>
+                    <td>---</td>
+                    <td><span class="badge badge-low">Low</span></td>
+                    <td><span class="mail-dot"></span></td>
+                    <td>BrandPOS CRM</td>
+                    <td>Admin A</td>
+                    <td>---</td>
+                    <td class="action-btn" onclick='viewLog(1)'>View</td>
+                </tr>
+
+                <tr onmousemove="showRowCard(event, 2)" onmouseleave="hideTooltip()">
+                    <td>2</td>
+                    <td>16 Mar 2026, 05:22 AM</td>
+                    <td>User Activities</td>
+                    <td>{"category":"visit_page","mo...</td>
+                    <td>---</td>
+                    <td><span class="badge badge-medium">Medium</span></td>
+                    <td><span class="mail-dot"></span></td>
+                    <td>BrandPOS CRM</td>
+                    <td>Admin A</td>
+                    <td>---</td>
+                    <td class="action-btn" onclick='viewLog(2)'>View</td>
+                </tr>
+
+                <tr onmousemove="showRowCard(event, 3)" onmouseleave="hideTooltip()">
+                    <td>3</td>
+                    <td>16 Mar 2026, 07:47 AM</td>
+                    <td>User Login</td>
+                    <td>{"timestamp":"2026-03-16T06:47...</td>
+                    <td>---</td>
+                    <td><span class="badge badge-low">Low</span></td>
+                    <td><span class="mail-dot"></span></td>
+                    <td>BrandPOS CRM</td>
+                    <td>Jeeva R</td>
+                    <td>India</td>
+                    <td class="action-btn" onclick='viewLog(3)'>View</td>
+                </tr>
+
+                <tr onmousemove="showRowCard(event, 4)" onmouseleave="hideTooltip()">
+                    <td>4</td>
+                    <td>12 Mar 2026, 05:03 PM</td>
+                    <td>User Activities</td>
+                    <td>{"event_id":"a6620fa4-7d86...</td>
+                    <td>{"source":"kafka-consumer"...</td>
+                    <td><span class="badge badge-high">High</span></td>
+                    <td><span class="mail-dot"></span></td>
+                    <td>BrandPOS MAS</td>
+                    <td>Alika Beard</td>
+                    <td>Germany</td>
+                    <td class="action-btn" onclick='viewLog(4)'>View</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="table-footer">
+            <span>Showing Results 1 to 4 of <b>506 Entries</b></span>
+            <div class="pagination">
+                <div class="page-btn">&laquo;</div>
+                <div class="page-btn">&lsaquo;</div>
+                <div class="page-btn active">1</div>
+                <div class="page-btn">2</div>
+                <div class="page-btn">...</div>
+                <div class="page-btn">39</div>
+                <div class="page-btn">&rsaquo;</div>
+                <div class="page-btn">&raquo;</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel" id="panel">
+        <span class="close-btn" onclick="closePanel()">&times;</span>
+        <h3>View Details</h3>
+
+        <div class="details">
+            <h4>Log Monitoring Details</h4>
+            <div class="details-grid">
+                <div class="details-item">
+                    <label>Date</label>
+                    <span id="logDate"></span>
+                </div>
+                <div class="details-item">
+                    <label>Log Type</label>
+                    <span id="logType"></span>
+                </div>
+                <div class="details-item">
+                    <label>Critical Level</label>
+                    <span id="logLevel">---</span>
+                </div>
+                <div class="details-item">
+                    <label>Mail Status</label>
+                    <span id="logMail">false</span>
+                </div>
+                <div class="details-item">
+                    <label>Server</label>
+                    <span id="logServer"></span>
+                </div>
+                <div class="details-item">
+                    <label id="lblUser">Full Name</label>
+                    <span id="logUser"></span>
+                </div>
+                <div class="details-item">
+                    <label id="lblPos">Role</label>
+                    <span id="logPos"></span>
+                </div>
+                <div class="details-item">
+                    <label>Location</label>
+                    <span id="logLocation">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab-btn active" id="tabLog" onclick="switchTab('log')">Log Details</button>
+            <button class="tab-btn" id="tabCustom" onclick="switchTab('custom')">Custom Log</button>
+        </div>
+        <div class="code-box" id="logContent"></div>
+    </div>
+
+    <!-- Hover Card -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        let currentLogId = null;
+        let currentTab = 'log';
+
+        function viewLog(id) {
+            currentLogId = id;
+            const data = logData[id];
+
+            document.getElementById("logDate").innerText = data.date;
+            document.getElementById("logType").innerText = data.type || "User Activities";
+            document.getElementById("logServer").innerText = data.server;
+            document.getElementById("logUser").innerText = data.user;
+            document.getElementById("logPos").innerText = data.position;
+            document.getElementById("logLevel").innerText = data.priority;
+            document.getElementById("logMail").innerText = data.mail_status || "false";
+            document.getElementById("logLocation").innerText = data.location;
+
+            const isMAS = data.server.includes("MAS");
+            document.getElementById("lblUser").innerText = isMAS ? "Staff Name" : "Full Name";
+            document.getElementById("lblPos").innerText = isMAS ? "Company" : "Role";
+
+            switchTab('log');
+            document.getElementById("panel").classList.add("active");
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const data = logData[currentLogId];
+
+            document.getElementById("tabLog").classList.toggle("active", tab === 'log');
+            document.getElementById("tabCustom").classList.toggle("active", tab === 'custom');
+
+            const logContent = tab === 'log' ? data.fullLog : data.customLog;
+            document.getElementById("logContent").textContent = JSON.stringify(logContent, null, 3);
+        }
+
+        function closePanel() {
+            document.getElementById("panel").classList.remove("active");
+        }
+
+        const logData = {
+            1: {
+                priority: "Low",
+                action: "Access Page",
+                page: "Log Monitoring",
+                duration: "1.2s",
+                device: "Chrome on Linux",
+                ip: "120.60.223.167",
+                date: "16 Mar 2026, 08:33 AM",
+                server: "BrandPOS CRM",
+                status: "Success",
+                user: "Admin A",
+                position: "System Administrator",
+                location: "India",
+                type: "User Activities",
+                mail_status: "false",
+                fullLog: { "category": "visit_page", "module": "Log Monitoring", "page": "Log Monitoring", "path": "/log", "timestamp": "2026-03-16T07:33:44.308Z" },
+                customLog: "---"
+            },
+            2: {
+                priority: "Medium",
+                action: "View Report",
+                page: "Merchant Onboarding",
+                duration: "2.5s",
+                device: "Chrome 145 on Linux",
+                ip: "120.60.223.167",
+                date: "16 Mar 2026, 05:22 AM",
+                server: "BrandPOS CRM",
+                status: "Success",
+                user: "Admin A",
+                position: "System Administrator",
+                location: "India",
+                type: "User Activities",
+                mail_status: "false",
+                fullLog: { "timestamp": "2026-03-16T07:05:22.743Z", "client": { "ip": "120.60.223.167, 172.17.0.23", "browser": "Chrome 145.0.0", "os": "Linux 0.0.0", "endpoint": "/user/employee/monitoring/merchant-onboarding", "method": "POST", "requestBody": { "user_id": 48, "from": "2026-02-15", "to": "2026-03-16" } }, "server": { "platform": "Linux", "network": { "eno1": [] } }, "response": { "status": 200 }, "trace": { "requestId": "0494a8a2-077a-4c74-81f7-ec739eaa768a", "clientStartUtc": "2026-03-16T07:05:22.560Z", "serverReceiveUtc": "2026-03-16T07:05:22.743Z", "serverDurationMs": 27.842668 } },
+                customLog: "---"
+            },
+            3: {
+                priority: "Low",
+                action: "Login",
+                page: "Sign In Portal",
+                duration: "N/A",
+                device: "Chrome 141 on Linux",
+                ip: "103.156.171.238",
+                date: "16 Mar 2026, 07:47 AM",
+                server: "BrandPOS CRM",
+                status: "Success",
+                user: "Jeeva R",
+                position: "Support Executive",
+                location: "India",
+                type: "User Login",
+                mail_status: "false",
+                fullLog: { "timestamp": "2026-03-16T06:47:52.522Z", "client": { "ip": "103.156.171.238, 172.17.0.23", "browser": "Chrome 141.0.0", "os": "Linux 0.0.0", "endpoint": "/auth/signin", "method": "POST", "requestBody": { "username": "jeeva", "password": "********", "lang": "en", "country": "India", "remember_me": false } }, "server": { "platform": "Linux" }, "response": { "status": 200 }, "trace": { "requestId": "c9997df3-af18-4f88-bd85-77b95ddf9dc9", "serverDurationMs": 231.563265 } },
+                customLog: "---"
+            },
+            4: {
+                priority: "High",
+                action: "Access Page",
+                page: "Transactions",
+                duration: "278ms",
+                device: "Chrome 144 on Linux",
+                ip: "115.245.23.123",
+                date: "12 Mar 2026, 05:03 PM",
+                server: "BrandPOS MAS",
+                status: "Success",
+                user: "Alika Beard (MSID: 521)",
+                position: "Decker and Collier Inc (MID: 97)",
+                location: "Germany",
+                type: "User Activities",
+                mail_status: "false",
+                fullLog: {
+                    "event_id": "a6620fa4-7d86-4395-b203-15e15b356d23",
+                    "event_type": "dashboard_overview_request",
+                    "timestamp": "2026-03-12T16:03:38.279Z",
+                    "source": "brandpos-mas",
+                    "level": "info",
+                    "data": { "user_id": 521, "company": "Decker and Collier Inc", "mid": 97, "name": "Alika Beard" },
+                    "request": {
+                        "ip_address": "115.245.23.123",
+                        "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                        "path": "/transactions",
+                        "method": "POST"
+                    },
+                    "kafka_topic": "brandpos-mas-dashboard",
+                    "kafka_offset": "278"
+                },
+                customLog: {
+                    "source": "kafka-consumer",
+                    "topic": "brandpos-mas-dashboard",
+                    "processed_at": "2026-03-12T16:03:38.281Z"
+                }
+            }
+        };
+
+        function showRowCard(event, id) {
+            const data = logData[id];
+            const isMAS = data.server.includes("MAS");
+            const nameLabel = isMAS ? "Staff Name" : "Full Name";
+            const posLabel = isMAS ? "Company" : "Role";
+            const tagClass = data.priority === "High" ? "card-tag-high" : data.priority === "Medium" ? "card-tag-medium" : "card-tag-low";
+
+            const html = `
+                <div class="card-header">
+                    <span class="card-title">${data.action}</span>
+                    <span class="card-tag ${tagClass}">${data.priority} Priority</span>
+                </div>
+                <div class="card-section-title">Activity</div>
+                <div class="card-grid">
+                    <div class="card-item"><b>Action</b>${data.action}</div>
+                    <div class="card-item"><b>Page</b>${data.page}</div>
+                    <div class="card-item"><b>Duration</b>${data.duration}</div>
+                    <div class="card-item"><b>Status</b>${data.status}</div>
+                </div>
+                <div class="card-section-title">Log Info</div>
+                <div class="card-grid">
+                    <div class="card-item"><b>Log Type</b>${data.type}</div>
+                    <div class="card-item"><b>Server</b>${data.server}</div>
+                    <div class="card-item"><b>Critical Level</b>${data.priority}</div>
+                    <div class="card-item"><b>Mail Trigger</b>${data.mail_status === "true" ? "Sent" : "Not Sent"}</div>
+                </div>
+                <div class="card-section-title">Environment</div>
+                <div class="card-grid">
+                    <div class="card-item"><b>Device</b>${data.device}</div>
+                    <div class="card-item"><b>Internet Address</b>${data.ip}</div>
+                </div>
+                <div class="card-section-title">User & Location</div>
+                <div class="card-grid">
+                    <div class="card-item"><b>${nameLabel}</b>${data.user}</div>
+                    <div class="card-item"><b>${posLabel}</b>${data.position}</div>
+                    <div class="card-item" style="grid-column: span 2;"><b>Location</b>${data.location}</div>
+                </div>
+                <div class="card-footer">Log generated on ${data.date}</div>
+            `;
+            showTooltip(event, html);
+        }
+
+        function showTooltip(event, html) {
+            let tooltip = document.getElementById("tooltip");
+            tooltip.innerHTML = html;
+            tooltip.style.display = "block";
+            tooltip.style.left = (event.pageX + 20) + "px";
+            tooltip.style.top = (event.pageY + 20) + "px";
+        }
+
+        function hideTooltip() {
+            document.getElementById("tooltip").style.display = "none";
+        }
+    </script>
+
+</body>
+
+</html>
